@@ -4,7 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'login_page.dart'; // Asegúrate de importar la pantalla de login
 
-const String apiKey = 'yLXwLEq2acs0WX5IpzVnEuuFxWnB2jn2xj1NTUGAaQF2PTwmvaF9n3w6';
+const String apiKey =
+    'yLXwLEq2acs0WX5IpzVnEuuFxWnB2jn2xj1NTUGAaQF2PTwmvaF9n3w6';
 
 void main() {
   runApp(const MyApp());
@@ -77,12 +78,18 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  void _removeTask(Task task) {
+    setState(() {
+      tasks.remove(task);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final List<Widget> _widgetOptions = <Widget>[
-      TaskListPage(tasks: tasks),
+      TaskListPage(tasks: tasks, onRemoveTask: _removeTask),
       AddTaskPage(onAddTask: _addTask),
-      FavoritesPage(),
+      FavoritesPage(tasks: tasks),
       ProfilePage(),
     ];
 
@@ -127,8 +134,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
 class TaskListPage extends StatefulWidget {
   final List<Task> tasks;
+  final Function(Task) onRemoveTask;
 
-  TaskListPage({required this.tasks});
+  TaskListPage({required this.tasks, required this.onRemoveTask});
 
   @override
   _TaskListPageState createState() => _TaskListPageState();
@@ -211,6 +219,9 @@ class _TaskListPageState extends State<TaskListPage> {
                                 !filteredTasks[index].isFavorite;
                           });
                         },
+                        onRemoveTask: () {
+                          widget.onRemoveTask(filteredTasks[index]);
+                        },
                       ),
                     );
                   },
@@ -224,11 +235,13 @@ class _TaskListPageState extends State<TaskListPage> {
 class TaskCard extends StatelessWidget {
   final Task task;
   final VoidCallback onFavoriteToggle;
+  final VoidCallback onRemoveTask;
 
   const TaskCard({
     Key? key,
     required this.task,
     required this.onFavoriteToggle,
+    required this.onRemoveTask,
   }) : super(key: key);
 
   @override
@@ -245,12 +258,21 @@ class TaskCard extends StatelessWidget {
           task.time,
           style: TextStyle(color: Colors.white70),
         ),
-        trailing: IconButton(
-          icon: Icon(
-            task.isFavorite ? Icons.favorite : Icons.favorite_border,
-            color: task.isFavorite ? Colors.red : Colors.white,
-          ),
-          onPressed: onFavoriteToggle,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: Icon(
+                task.isFavorite ? Icons.favorite : Icons.favorite_border,
+                color: task.isFavorite ? Colors.red : Colors.white,
+              ),
+              onPressed: onFavoriteToggle,
+            ),
+            IconButton(
+              icon: Icon(Icons.delete, color: Colors.white),
+              onPressed: onRemoveTask,
+            ),
+          ],
         ),
       ),
     );
@@ -476,10 +498,10 @@ class _AddTaskPageState extends State<AddTaskPage> {
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                     side: BorderSide(
-                                      color: _selectedImageUrl ==
-                                              _imageUrls[index]
-                                          ? Colors.blue
-                                          : Colors.transparent,
+                                      color:
+                                          _selectedImageUrl == _imageUrls[index]
+                                              ? Colors.blue
+                                              : Colors.transparent,
                                       width: 2,
                                     ),
                                   ),
@@ -554,21 +576,34 @@ class _AddTaskPageState extends State<AddTaskPage> {
 }
 
 class FavoritesPage extends StatelessWidget {
+  final List<Task> tasks;
+
+  FavoritesPage({required this.tasks});
+
   @override
   Widget build(BuildContext context) {
-    final int imageCount = 3;
+    List<Task> favoriteTasks = tasks.where((task) => task.isFavorite).toList();
 
-    return ListView.builder(
-      itemCount: imageCount,
-      itemBuilder: (context, index) {
-        return ListTile(
-          leading: Image.network(
-              'https://source.unsplash.com/category/nature?sig=$index',
-              fit: BoxFit.cover),
-          title: Text('Imagen Favorita ${index + 1}'),
-        );
-      },
-    );
+    return favoriteTasks.isEmpty
+        ? Center(
+            child: Text(
+              'No favorite tasks available',
+              style: TextStyle(fontSize: 18, color: Colors.grey),
+            ),
+          )
+        : ListView.builder(
+            itemCount: favoriteTasks.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                leading: Image.network(
+                  favoriteTasks[index].imageUrl,
+                  fit: BoxFit.cover,
+                ),
+                title: Text(favoriteTasks[index].title),
+                subtitle: Text(favoriteTasks[index].time),
+              );
+            },
+          );
   }
 }
 
