@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'login_page.dart'; // Asegúrate de importar la pantalla de login
 
-const String apiKey =
-    'yLXwLEq2acs0WX5IpzVnEuuFxWnB2jn2xj1NTUGAaQF2PTwmvaF9n3w6';
+const String apiKey = 'yLXwLEq2acs0WX5IpzVnEuuFxWnB2jn2xj1NTUGAaQF2PTwmvaF9n3w6';
 
 void main() {
   runApp(const MyApp());
@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'My Task'),
+      home: const LoginPage(), // Cambia a la pantalla de login
     );
   }
 }
@@ -70,6 +70,13 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void _logout() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginPage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final List<Widget> _widgetOptions = <Widget>[
@@ -81,6 +88,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.logout),
+          onPressed: _logout,
+        ),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
@@ -465,10 +476,10 @@ class _AddTaskPageState extends State<AddTaskPage> {
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                     side: BorderSide(
-                                      color:
-                                          _selectedImageUrl == _imageUrls[index]
-                                              ? Colors.blue
-                                              : Colors.transparent,
+                                      color: _selectedImageUrl ==
+                                              _imageUrls[index]
+                                          ? Colors.blue
+                                          : Colors.transparent,
                                       width: 2,
                                     ),
                                   ),
